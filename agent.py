@@ -10,7 +10,7 @@ from drive_tool import search_drive_files
 # ── LLM ──────────────────────────────────────────────
 llm = ChatGroq(
     model="llama-3.1-8b-instant",
-    api_key=os.getenv("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") or os.getenv("Ogsk_VHmTUE1BfABo1K2b4Xj5WGdyb3FY2v2AyEjbW0JEBhsMaiV8ezQ8"),
+    api_key=os.getenv("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") or os.getenv("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"),
     temperature=0
 )
 
