@@ -1,95 +1,64 @@
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+import streamlit as st
 import os
-SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
-SERVICE_ACCOUNT_FILE = "service_account.json"
-DRIVE_FOLDER_ID = "1qkx58doSeYrcLjHPDysJyVJ36PsSqqlt"
+import json
+from dotenv import load_dotenv
+
+load_dotenv()
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
-SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "service_account.json")
-DRIVE_FOLDER_ID = os.getenv("FOLDER_ID", "1qkx58doSeYrcLjHPDysJyVJ36PsSqqlt")
-
 
 def get_drive_service():
-    """Authenticate and return Google Drive service."""
-    creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES
-    )
-    service = build("drive", "v3", credentials=creds)
-    return service
+    # Streamlit Cloud pe secrets se credentials lo
+    if hasattr(st, 'secrets') and 'gcp_service_account' in st.secrets:
+        creds_dict = dict(st.secrets["gcp_service_account"])
+        creds = service_account.Credentials.from_service_account_info(
+            creds_dict, scopes=SCOPES
+        )
+    else:
+        # Local pe file se lo
+        SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "service_account.json")
+        creds = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
+    return build("drive", "v3", credentials=creds)
 
+def get_folder_id():
+    if hasattr(st, 'secrets') and 'FOLDER_ID' in st.secrets:
+        return st.secrets["FOLDER_ID"]
+    return os.getenv("FOLDER_ID")
 
-def search_drive_files(query: str, max_results: int = 10) -> list[dict]:
-    """
-    Search Google Drive files using the Drive API q parameter.
-
-    Args:
-        query: A Google Drive API query string.
-                Examples:
-                  - "name contains 'report'"
-                  - "mimeType = 'application/pdf'"
-                  - "fullText contains 'invoice'"
-                  - "name contains 'budget' and mimeType = 'application/vnd.google-apps.spreadsheet'"
-        max_results: Maximum number of results to return (default 10).
-
-    Returns:
-        List of dicts with file info: id, name, mimeType, webViewLink, modifiedTime
-    """
+def search_drive_files(query: str) -> str:
     try:
         service = get_drive_service()
+        FOLDER_ID = get_folder_id()
 
-        # Always restrict search to the shared folder
-        folder_query = f"'{DRIVE_FOLDER_ID}' in parents and trashed = false"
-
-        # Combine with user query if provided
-        if query and query.strip():
-            full_query = f"({query}) and {folder_query}"
+        if query.strip() == "" or query.strip() == "*":
+            full_query = f"'{FOLDER_ID}' in parents and trashed=false"
         else:
-            full_query = folder_query
+            full_query = f"'{FOLDER_ID}' in parents and ({query}) and trashed=false"
 
         results = service.files().list(
             q=full_query,
-            pageSize=max_results,
-            fields="files(id, name, mimeType, webViewLink, modifiedTime, size)",
-            orderBy="modifiedTime desc",
+            pageSize=50,
+            fields="files(id, name, mimeType, modifiedTime, webViewLink)"
         ).execute()
 
         files = results.get("files", [])
 
         if not files:
-            return []
+            return "Koi file nahi mili."
 
-        formatted = []
+        output = f"Mujhe {len(files)} file(s) mili:\n\n"
         for f in files:
+            name = f.get("name", "Unknown")
             mime = f.get("mimeType", "")
-            formatted.append({
-                "id": f.get("id"),
-                "name": f.get("name"),
-                "type": _mime_to_readable(mime),
-                "mimeType": mime,
-                "link": f.get("webViewLink", ""),
-                "modified": f.get("modifiedTime", ""),
-                "size": f.get("size", "N/A"),
-            })
+            modified = f.get("modifiedTime", "")[:10]
+            link = f.get("webViewLink", "#")
+            output += f"📄 {name} | {mime} | {modified} | {link}\n"
 
-        return formatted
+        return output
 
     except Exception as e:
-        return [{"error": str(e)}]
-
-
-def _mime_to_readable(mime: str) -> str:
-    """Convert MIME type to human-readable format."""
-    mime_map = {
-        "application/vnd.google-apps.document": "Google Doc",
-        "application/vnd.google-apps.spreadsheet": "Google Sheet",
-        "application/vnd.google-apps.presentation": "Google Slides",
-        "application/vnd.google-apps.folder": "Folder",
-        "application/pdf": "PDF",
-        "image/jpeg": "JPEG Image",
-        "image/png": "PNG Image",
-        "text/plain": "Text File",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "Word Document",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "Excel Sheet",
-    }
-    return mime_map.get(mime, mime.split("/")[-1].capitalize())
+        return f"Drive Error: {str(e)}"
