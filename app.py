@@ -1,13 +1,11 @@
 import streamlit as st
 import os
 
-# Set env vars from Streamlit secrets BEFORE importing agent
 if hasattr(st, 'secrets'):
-    os.environ["GOgsk_VHmTUE1BfABo1K2b4Xj5WGdyb3FY2v2AyEjbW0JEBhsMaiV8ezQ8"] = st.secrets.get("GOgsk_VHmTUE1BfABo1K2b4Xj5WGdyb3FY2v2AyEjbW0JEBhsMaiV8ezQ8", "")
+    os.environ["GROQ_API_KEY"] = st.secrets.get("GROQ_API_KEY", "")
     os.environ["FOLDER_ID"] = st.secrets.get("FOLDER_ID", "")
-    os.environ["SERVICE_ACCOUNT_FILE"] = st.secrets.get("SERVICE_ACCOUNT_FILE", "service_account.json")
 
-from agent import chat  # import AFTER env vars are set
+from agent import chat
 
 st.set_page_config(page_title="Drive Agent", page_icon="📁", layout="centered")
 st.title("📁 Google Drive AI Assistant")
