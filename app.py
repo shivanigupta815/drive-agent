@@ -1,9 +1,14 @@
 import streamlit as st
 import os
 
-if hasattr(st, 'secrets'):
-    os.environ["GROQ_API_KEY"] = st.secrets.get("GROQ_API_KEY", "")
-    os.environ["FOLDER_ID"] = st.secrets.get("FOLDER_ID", "")
+try:
+    if hasattr(st, 'secrets'):
+        if "GROQ_API_KEY" in st.secrets:
+            os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
+        if "FOLDER_ID" in st.secrets:
+            os.environ["FOLDER_ID"] = st.secrets["FOLDER_ID"]
+except:
+    pass
 
 from agent import chat
 
