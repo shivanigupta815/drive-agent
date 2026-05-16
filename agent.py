@@ -36,7 +36,7 @@ Rules for query parameter:
 - PDF files: mimeType = 'application/pdf'
 - Images: mimeType contains 'image'
 - By name: name contains 'report'
-- Google Sheets: mimeType = 'application/vnd.google-apps.spreadsheet'
+- Google Sheets: mimeType = 'application/vnd.google-apps.spreadsheet' (use single quotes only)
 - Google Docs: mimeType = 'application/vnd.google-apps.document'
 
 NEVER say you cannot do this. Always call the tool, then show results to user."""
