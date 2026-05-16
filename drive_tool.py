@@ -56,7 +56,7 @@ def search_drive_files(query: str) -> str:
             mime = f.get("mimeType", "")
             modified = f.get("modifiedTime", "")[:10]
             link = f.get("webViewLink", "#")
-            output += f"📄 {name} | {mime} | {modified} | {link}\n"
+            output += f"📄 [{name}]({link}) | {mime} | {modified}\n"
 
         return output
 
