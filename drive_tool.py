@@ -1,33 +1,18 @@
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-import streamlit as st
 import os
-import json
-from dotenv import load_dotenv
-
-load_dotenv()
 
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 def get_drive_service():
-    # Streamlit Cloud pe secrets se credentials lo
-    if hasattr(st, 'secrets') and 'gcp_service_account' in st.secrets:
-        creds_dict = dict(st.secrets["gcp_service_account"])
-        creds = service_account.Credentials.from_service_account_info(
-            creds_dict, scopes=SCOPES
-        )
-    else:
-        # Local pe file se lo
-        SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "service_account.json")
-        creds = service_account.Credentials.from_service_account_file(
-            SERVICE_ACCOUNT_FILE, scopes=SCOPES
-        )
+    SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE", "service_account.json")
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES
+    )
     return build("drive", "v3", credentials=creds)
 
 def get_folder_id():
-    if hasattr(st, 'secrets') and 'FOLDER_ID' in st.secrets:
-        return st.secrets["FOLDER_ID"]
-    return os.getenv("FOLDER_ID")
+    return os.getenv("FOLDER_ID", "1qkx58doSeYrcLjHPDysJyVJ36PsSqqlt")
 
 def search_drive_files(query: str) -> str:
     try:

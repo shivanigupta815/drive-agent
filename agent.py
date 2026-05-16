@@ -1,20 +1,10 @@
 import os
-
-# ── Imports ──────────────────────────────────────────
 from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.prebuilt import create_react_agent
 from drive_tool import search_drive_files
 
-# ── LLM ──────────────────────────────────────────────
-llm = ChatGroq(
-    model="llama-3.1-8b-instant",
-    api_key=os.getenv("GROQ_API_KEY"),
-    temperature=0
-)
-
-# ── Tool ─────────────────────────────────────────────
 @tool
 def DriveSearchTool(query: str) -> str:
     """
@@ -26,47 +16,59 @@ def DriveSearchTool(query: str) -> str:
     """
     return search_drive_files(query)
 
-# ── System Prompt ─────────────────────────────────────
-SYSTEM_PROMPT = """You are a Google Drive file search assistant.
+SYSTEM_PROMPT = """You are a Google Drive file search assistant. You have access to DriveSearchTool.
 
-IMPORTANT: You MUST always call the DriveSearchTool when user asks about files.
+RULES:
+1. ALWAYS call DriveSearchTool first before responding
+2. NEVER make up or guess file names
+3. NEVER say results are fictional
+4. After tool returns results, show them to user
 
-Rules for query parameter:
-- Show all files: use query = "name contains ''"
-- PDF files: mimeType = 'application/pdf'
+Query examples:
+- All files: name contains ''
+- PDFs: mimeType = 'application/pdf'
 - Images: mimeType contains 'image'
 - By name: name contains 'report'
-- Google Sheets: mimeType = 'application/vnd.google-apps.spreadsheet' (use single quotes only)
-- Google Docs: mimeType = 'application/vnd.google-apps.document'
+- Sheets: mimeType = 'application/vnd.google-apps.spreadsheet'"""
+def get_agent():
+    import streamlit as st
+    
+    api_key = os.getenv("GROQ_API_KEY")
+    print(f"API KEY: {api_key[:10] if api_key else 'NONE'}")
+    
+    if not api_key:
+        try:
+            api_key = st.secrets["GROQ_API_KEY"]
+            print("Got key from secrets")
+        except Exception as e:
+            print(f"Secrets error: {e}")
+    
+    llm = ChatGroq(
+        model="llama-3.1-8b-instant",  # chhota model, zyada tokens
+        api_key=api_key,
+        temperature=0
+    )
+    return create_react_agent(model=llm, tools=[DriveSearchTool])
 
-NEVER say you cannot do this. Always call the tool, then show results to user."""
-
-# ── Agent ─────────────────────────────────────────────
-agent = create_react_agent(
-    model=llm,
-    tools=[DriveSearchTool]
-)
-
-# ── Chat Function ─────────────────────────────────────
 def chat(message: str, history: list = []) -> str:
+    print("CHAT CALLED:", message)  # ADD
     try:
-        lc_messages = [SystemMessage(content=SYSTEM_PROMPT)]  # always first
-
+        agent = get_agent()
+        print("AGENT CREATED")  # ADD
+        lc_messages = [SystemMessage(content=SYSTEM_PROMPT)]
         for msg in history:
             if msg["role"] == "user":
                 lc_messages.append(HumanMessage(content=msg["content"]))
             elif msg["role"] == "assistant":
                 lc_messages.append(AIMessage(content=msg["content"]))
-
         lc_messages.append(HumanMessage(content=message))
+        print("INVOKING AGENT")  # ADD
         result = agent.invoke({"messages": lc_messages})
-
+        print("AGENT DONE")  # ADD
         for msg in reversed(result["messages"]):
             if hasattr(msg, "content") and msg.content:
                 return msg.content
-
         return "No response generated."
-
     except Exception as e:
         print("CHAT ERROR:", str(e))
         return f"Error: {str(e)}"
