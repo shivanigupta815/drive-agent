@@ -31,32 +31,12 @@ llm = ChatGroq(
 def DriveSearchTool(query: str) -> str:
     """
     Search Google Drive files using a query string.
-
-    Example:
+    Examples:
     - name contains 'report'
     - mimeType = 'application/pdf'
     - fullText contains 'invoice'
     """
-
-    results = search_drive_files(query)
-
-    if not results:
-        return "No files found matching your search."
-
-    if isinstance(results, list) and "error" in results[0]:
-        return f"Error: {results[0]['error']}"
-
-    output = f"Found {len(results)} file(s):\n\n"
-
-    for i, f in enumerate(results, 1):
-        output += (
-            f"{i}. {f.get('name','Unknown')}\n"
-            f"   Type: {f.get('type','Unknown')}\n"
-            f"   Modified: {f.get('modified','Unknown')[:10] if f.get('modified') else 'Unknown'}\n"
-            f"   Link: {f.get('link','N/A')}\n\n"
-        )
-
-    return output
+    return search_drive_files(query)
 
 
 # ── Agent ────────────────────────────────────────────

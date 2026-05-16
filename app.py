@@ -2,7 +2,7 @@ import streamlit as st
 import os
 
 if hasattr(st, 'secrets'):
-    os.environ["GOOGLE_API_KEY"] = st.secrets.get("GOOGLE_API_KEY", "")
+    os.environ["GOOGLE_API_KEY"] = st.secrets.get("GOOGLE_API_KEY", "") if hasattr(st.secrets, 'get') else st.secrets["GOOGLE_API_KEY"]
     os.environ["FOLDER_ID"] = st.secrets.get("FOLDER_ID", "")
     os.environ["SERVICE_ACCOUNT_FILE"] = st.secrets.get("SERVICE_ACCOUNT_FILE", "service_account.json")
 
