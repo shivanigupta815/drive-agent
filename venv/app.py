@@ -1,11 +1,11 @@
 import streamlit as st
 import os
 
-# Streamlit Cloud secrets load karo
 if hasattr(st, 'secrets'):
-    os.environ["GOOGLE_API_KEY"] = st.secrets.get("GOOGLE_API_KEY", "")
-    os.environ["FOLDER_ID"] = st.secrets.get("FOLDER_ID", "")
-    os.environ["SERVICE_ACCOUNT_FILE"] = st.secrets.get("SERVICE_ACCOUNT_FILE", "service_account.json")
+    if "GROQ_API_KEY" in st.secrets:
+        os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
+    if "FOLDER_ID" in st.secrets:
+        os.environ["FOLDER_ID"] = st.secrets["FOLDER_ID"]
 
 from agent import chat
 

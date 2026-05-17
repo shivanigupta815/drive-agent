@@ -1,10 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 from agent import chat
 
-app = FastAPI(title="Drive Agent API")
+app = FastAPI(
+    title="Drive Agent API",
+    description="Google Drive AI Assistant API",
+    version="1.0.0"
+)
 
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,29 +26,38 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     message: str
-    history: list = []   # [{"role": "user"/"assistant", "content": "..."}]
+    history: list = []  # [{"role": "user"/"assistant", "content": "..."}]
 
 
 @app.get("/")
 def root():
-    return {"status": "Drive Agent is running!"}
+    """Health check endpoint"""
+    return {
+        "status": "Drive Agent is running",
+        "version": "1.0.0"
+    }
+
+
+@app.get("/health")
+def health():
+    """Health check for load balancers"""
+    return {"status": "healthy"}
 
 
 @app.post("/chat")
 def chat_endpoint(request: ChatRequest):
+    """Chat endpoint for Drive file search"""
     try:
-        print("Received message:", request.message)
-
         response = chat(request.message, request.history)
+        return {"response": response, "success": True}
 
-        print("Response:", response)
-
-        return {"response": response}
-
+    except ValueError as e:
+        return {
+            "error": "Configuration error",
+            "success": False
+        }
     except Exception as e:
-        import traceback
-
-        print("ERROR OCCURRED:")
-        traceback.print_exc()
-
-        return {"error": str(e)}
+        return {
+            "error": "An error occurred while processing your request",
+            "success": False
+        }
