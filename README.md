@@ -1,6 +1,6 @@
 # 📁 Google Drive AI Assistant
 
-A conversational chatbot that helps you search and discover files in your Google Drive using natural language queries. Powered by Groq LLM and LangGraph for intelligent file searching.
+A conversational chatbot that helps you search and discover files in your Google Drive using natural language queries. Powered by OpenAI or Groq and LangChain for intelligent file searching.
 
 ## ✨ Features
 
@@ -17,7 +17,7 @@ A conversational chatbot that helps you search and discover files in your Google
 
 - Python 3.8+
 - Google Drive account
-- Groq API key (get from https://console.groq.com)
+- OpenAI or Groq API key
 - Google Service Account (for API access)
 
 ### 2. Create Google Service Account
@@ -67,8 +67,10 @@ Then edit `.env` with your actual values:
 FOLDER_ID=your_google_drive_folder_id_here
 SERVICE_ACCOUNT_FILE=service_account.json
 
-# Groq API Key (get from https://console.groq.com)
+# OpenAI or Groq API Key
+OPENAI_API_KEY=your_openai_api_key_here
 GROQ_API_KEY=your_groq_api_key_here
+MODEL_NAME=openai:gpt-4o-mini
 
 # Backend URL (for frontend)
 BACKEND_URL=http://127.0.0.1:8000
@@ -162,8 +164,10 @@ client_x509_cert_url = "https://www.googleapis.com/robot/v1/metadata/x509/..."
 # Your Google Drive folder ID
 FOLDER_ID = "1qkx58doSeYrcLjHPDysJyVJ36PsSqqlt"
 
-# Groq API Key
-GROQ_API_KEY = "gsk_your_key_here"
+# OpenAI or Groq API Key
+OPENAI_API_KEY = "your_openai_api_key_here"
+# Optional Groq key example
+GROQ_API_KEY = "your_groq_api_key_here"
 ```
 
 **How to get service account JSON for secrets:**
@@ -174,7 +178,7 @@ GROQ_API_KEY = "gsk_your_key_here"
 
 ### Step 4: Done! 🎉
 
-Your app will be live at: `https://drive-agent-uebufjudnecjscf4wyuzyy.streamlit.app`
+Your app will be live on Streamlit Cloud once deployment completes.
 
 **The app automatically:**
 - ✅ Detects Streamlit Cloud and uses secrets
