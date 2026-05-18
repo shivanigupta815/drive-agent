@@ -162,7 +162,7 @@ auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
 client_x509_cert_url = "https://www.googleapis.com/robot/v1/metadata/x509/..."
 
 # Your Google Drive folder ID
-FOLDER_ID = "1qkx58doSeYrcLjHPDysJyVJ36PsSqqlt"
+FOLDER_ID = "your_folder_id_here"
 
 # OpenAI or Groq API Key
 OPENAI_API_KEY = "your_openai_api_key_here"

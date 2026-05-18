@@ -8,8 +8,12 @@ load_dotenv()
 # Load secrets from Streamlit if available
 try:
     if hasattr(st, 'secrets'):
+        if "OPENAI_API_KEY" in st.secrets:
+            os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
         if "GROQ_API_KEY" in st.secrets:
             os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
+        if "MODEL_NAME" in st.secrets:
+            os.environ["MODEL_NAME"] = st.secrets["MODEL_NAME"]
         if "FOLDER_ID" in st.secrets:
             os.environ["FOLDER_ID"] = st.secrets["FOLDER_ID"]
         if "SERVICE_ACCOUNT_FILE" in st.secrets:
@@ -23,14 +27,6 @@ st.set_page_config(page_title="Drive Agent", page_icon="📁", layout="centered"
 st.title("📁 Google Drive AI Assistant")
 st.caption("Search your Drive files using natural language!")
 
-# Check if configuration is set
-try:
-    from drive_tool import get_api_key
-    if not get_api_key():
-        st.error("⚠️ API Key not configured. Please set GROQ_API_KEY environment variable.")
-        st.stop()
-except:
-    pass
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
